@@ -3,6 +3,7 @@ import vue from '@vitejs/plugin-vue';
 import path from 'path';
 import Components from "unplugin-vue-components/vite";
 import { ElementPlusResolver } from "unplugin-vue-components/resolvers";
+
 export default defineConfig({
   plugins: [vue()],
   resolve: {
@@ -10,4 +11,12 @@ export default defineConfig({
       '@': path.resolve(__dirname, 'src'), // 配置 @ 别名
     },
   },
+  server: {
+    proxy: {
+      '/a': {
+        target: 'http://10.144.22.70:8000', // 后端接口地址
+        changeOrigin: true,  // 是否更改请求头中的 Host 字段
+      }
+    }
+  }
 });

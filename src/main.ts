@@ -4,8 +4,8 @@ import router from './router'; // 引入路由配置文件
 import ElementPlus from 'element-plus'; // 引入 Element Plus
 import 'element-plus/dist/index.css'; // 引入样式文件
 import Mock from 'mockjs';
-import './mock/login.js'
-import './mock/activities.js'
+import './mock/login.ts'
+import './mock/activities.ts'
 import axios from "axios";
 // 创建 Vue 应用实例
 const app = createApp(App);
