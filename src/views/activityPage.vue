@@ -1,248 +1,441 @@
 <template>
-  <el-card class="box-card">
-    <!-- 新增按钮 -->
-    <el-row class="toolbar">
-      <el-button size="small" type="primary" @click="add">新增活动</el-button>
-    </el-row>
+  <div class="box">
+    <div class="header">
+      <h1>精彩活动</h1>
+    </div>
+    <div class="center">
+      <div class="container-box">
+        <div class="common-container">
+          <el-tabs @tab-click="handleTabClick" v-model="activeName" class="demo-tabs" stretch>
+            <!--            <el-tab-pane label="全部" name="all"  @tab-click="handleClick" stretch >
+                          <ActivityCard  tag=0 />
+                        </el-tab-pane>-->
+            <el-tab-pane v-for="tag in tagList" :label="tag.value.tagName" :name="tag.value.tagId">
 
-    <!-- 对话框 -->
-    <el-dialog :title="title" v-model="dialogFormVisible" width="35%">
-      <el-form :model="form" :rules="rules" ref="form" label-width="80px">
-        <el-form-item label="ID" hidden>
-          <el-input v-model="form.id" readonly></el-input>
-        </el-form-item>
-        <el-form-item label="姓名" prop="name">
-          <el-input v-model="form.name" placeholder="请输入姓名"></el-input>
-        </el-form-item>
-        <el-form-item label="年龄" prop="age">
-          <el-input-number
-              v-model="form.age"
-              :min="0"
-              :max="200"
-              placeholder="请输入年龄"
-              style="width: 100%;"
-          ></el-input-number>
-        </el-form-item>
-        <el-form-item label="性别" prop="gender">
-          <el-select v-model="form.gender" placeholder="请选择性别">
-            <el-option label="男" value="男"></el-option>
-            <el-option label="女" value="女"></el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="邮箱" prop="email">
-          <el-input v-model="form.email" placeholder="请输入邮箱"></el-input>
-        </el-form-item>
-      </el-form>
-      <div class="dialog-footer" slot="footer">
-        <el-button @click="dialogFormVisible = false">取消</el-button>
-        <el-button type="primary" @click="submit()">提交</el-button>
+            </el-tab-pane>
+
+            <div class="card-container" v-if="show">
+              <el-card class="card" v-for="(item, index) in activityList.value" :key="index">
+                <el-row>
+                  <el-col :span="10" class="card-left">
+                    <img class="cover mouse" :src="item.pic" @click="enter"/>
+                    <div class="overlay mouse" @click="enter(item)">
+                      <h2>· 活动 {{ item.time }} 开始</h2>
+                    </div>
+                    <div class="overlay1 mouse">
+                      <div class="bottom-right">
+                        <p>{{ item.subscriberCount }} 人已报名</p>
+                      </div>
+                    </div>
+                  </el-col>
+                  <el-col :span="14" class="card-right">
+                    <h2 class="card-title mouse">{{ item.name }}</h2>
+                    <div class="card-tag mouse">
+                      <el-tag  type="warning" round>活动</el-tag>{{ "\xa0" }}
+                      <el-tag type="primary" round>{{ item.tagName }}</el-tag>
+                      <!-- <el-tag
+                        v-for="item in items"
+                        :key="item.label"
+                        :type="item.type"
+                        effect="light"
+                        round
+                      >
+                        {{ item.label }}
+                      </el-tag> -->
+                    </div>
+                    <p class="card-describe">{{ item.content }}</p>
+                    <span class="card-position"><el-icon :size="15"><Location /></el-icon> {{ item.address }}</span>
+                    <div style="display: flex;">
+                      <el-button class="card-but2" round @click="enter(item)">查看活动</el-button>
+                      <!--            <el-button class="card-but" round><el-icon :size="7.5"><Plus /></el-icon>{{ "\xa0" }}立即预约</el-button>-->
+                    </div>
+                    <el-button @click="submitUpDate" >修改</el-button>
+                  </el-col>
+                </el-row>
+              </el-card>
+            </div>
+            <div v-else>
+              <ActivityCard :act="activityList"></ActivityCard>
+            </div>
+
+            <el-pagination style="align-content: center;justify-content: center"
+                           v-model:current-page="currentPage"
+                           :page-size="pageSize"
+                           :total="totalActivities"
+                           @current-change="handlePageChange"
+                           layout="prev, pager, next"
+            />
+          </el-tabs>
+        </div>
       </div>
-    </el-dialog>
-
-    <!-- 表格 -->
-    <el-table :data="tableData" style="width: 100%" border stripe>
-      <el-table-column type="index" label="#" width="50"></el-table-column>
-      <el-table-column property="name" label="姓名" width="150"></el-table-column>
-      <el-table-column property="age" label="年龄" width="80"></el-table-column>
-      <el-table-column property="gender" label="性别" width="80"></el-table-column>
-      <el-table-column property="email" label="邮箱"></el-table-column>
-      <el-table-column label="操作" width="150">
-        <template #default="scope">
-          <el-button
-              size="small"
-              type="success"
-              icon="el-icon-edit"
-              @click="edit(scope.$index, scope.row)"
-          >
-            编辑
-          </el-button>
-          <el-button
-              size="small"
-              type="danger"
-              icon="el-icon-delete"
-              @click="remove(scope.$index)"
-          >
-            删除
-          </el-button>
-        </template>
-      </el-table-column>
-    </el-table>
-  </el-card>
+    </div>
+    <el-button class="foot" @click="submitBack">返回</el-button>
+  </div>
 </template>
 
-<script>
-import { reactive, ref } from "vue";
-import { ElMessage } from "element-plus";
-import axios from "axios";
+<script setup>
+import { nextTick,ref, reactive, toRefs, onBeforeMount, onMounted, watchEffect, computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import ActivityCard from '@/components/ActivityCard.vue';
+import actStore from "@/store/actStore";
+import activityService from "@/requests/activityService";
 
-export default {
-  name: "activityPage",
-  setup() {
-    const dialogFormVisible = ref(false); // 对话框显示状态
-    const title = ref(""); // 对话框标题
-    const form = reactive({
-      id: null,
-      name: "",
-      age: null,
-      gender: "",
-      email: "",
-    }); // 表单数据
-    const tableData = ref([]); // 表格数据
+const newActStore = actStore();
 
-    const rules = {
-      name: [{ required: true, message: "请输入姓名", trigger: "blur" }],
-      age: [
-        { required: true, message: "请输入年龄", trigger: "blur" },
-        { type: "number", message: "年龄必须为数字值", trigger: "blur" },
-        { pattern: /^(0|[1-9]\d?|200)$/, message: "范围在0-200", trigger: "blur" },
-      ],
-      gender: [{ required: true, message: "请选择性别", trigger: "change" }],
-      email: [{ required: true, message: "请输入邮箱", trigger: "blur" }],
-    };
+const activeName = ref(1)
 
-    // 获取活动数据
-    const getTableData = async () => {
-      try {
-        const response = await axios.get('/api/activities');
-        tableData.value = response.data.data;
-      } catch (error) {
-        ElMessage.error('获取活动数据失败！');
-      }
-    };
+const tagList = toRefs(newActStore.getTag());
 
-    // 表单重置
-    const resetForm = () => {
-      form.id = null;
-      form.name = "";
-      form.age = null;
-      form.gender = "";
-      form.email = "";
-    };
+const show = ref(true);
 
-    // 新增
-    const add = () => {
-      resetForm();
-      title.value = "新增活动";
-      dialogFormVisible.value = true;
-    };
+const currentPage = ref(1);
+const pageSize = ref(4);
+const totalActivities = ref(0);
+const submitUpDate = (item) => {
+  router.push({path: '/activityUpdate', params: {activityId: item.activityId}});
 
-    // 删除
-    const remove = async (index) => {
-      const activityId = tableData.value[index].id;
-      try {
-        await axios.delete(`/api/activity/${activityId}`);
-        tableData.value.splice(index, 1); // 删除表格数据
-        ElMessage.success("删除成功！");
-      } catch (error) {
-        ElMessage.error("删除失败！");
-      }
-    };
-
-    // 编辑
-    const edit = (index, row) => {
-      resetForm();
-      Object.assign(form, row); // 将选中行的数据复制到表单
-      title.value = "修改活动";
-      dialogFormVisible.value = true;
-    };
-
-    // 提交表单
-    const submit = async () => {
-      if (!form.name || !form.age || !form.gender || !form.email) {
-        ElMessage.warning("请完整填写表单！");
-        return;
-      }
-
-      if (form.id === null) {
-        // 新增
-        try {
-          const response = await axios.post('/api/activity', form);
-          tableData.value.push(response.data.data);
-          ElMessage.success("新增成功！");
-        } catch (error) {
-          ElMessage.error("新增失败！");
-        }
-      } else {
-        // 修改
-        try {
-          const response = await axios.put(`/api/activity/${form.id}`, form);
-          const index = tableData.value.findIndex(item => item.id === form.id);
-          if (index !== -1) {
-            tableData.value[index] = response.data.data;
-            ElMessage.success("修改成功！");
-          }
-        } catch (error) {
-          ElMessage.error("修改失败！");
-        }
-      }
-      dialogFormVisible.value = false; // 关闭对话框
-    };
-
-    // 获取初始数据
-    getTableData();
-
-    return {
-      dialogFormVisible,
-      title,
-      form,
-      tableData,
-      rules,
-      add,
-      remove,
-      edit,
-      submit,
-    };
-  },
 };
+
+const activityList = toRefs(newActStore.getActivity());
+// activityList computer 按照activityId排序
+const sortedActivityList = computed(() => {
+  // eslint-disable-next-line vue/no-side-effects-in-computed-properties
+});
+
+onMounted(async () => {
+  console.log('3.-组件挂载到页面之后执行-------onMounted')
+  currentPage.value = 1;
+
+  const res = await activityService.getActivityTagList();
+  if(res.data.success){
+    newActStore.setTag(res.data.data);
+    tagList.value = res.data.data;
+  }
+
+  const res1 = await activityService.getActivityInfo({
+    pageDTO: {
+      pageNum: currentPage.value,
+      pageSize: pageSize.value
+    },
+    tagId: activeName.value
+  });
+  if (res1.data.success) {
+    show.value = false;
+    newActStore.setActivity(res1.data.data.list);
+    activityList.value = res1.data.data.list;
+    activityList.value =   (activityList.value.sort((a, b) => a.activityId - b.activityId));
+    totalActivities.value = res1.data.data.total;
+
+    await nextTick(
+        () => {
+          show.value = true;
+        }
+    );
+  }
+})
+const submitBack = () => {
+  router.push("/indexPage");
+};
+const handleTabClick = async (tab) => {
+  console.log(tab)
+  currentPage.value = 1;
+
+  const res = await activityService.getActivityInfo({
+    pageDTO: {
+      pageNum: currentPage.value,
+      pageSize: pageSize.value
+    },
+    tagId: tab.props.name
+  });
+  if (res.data.success) {
+    newActStore.setActivity(res.data.data);
+    activityList.value = res.data.data.list;
+    activityList.value =   (activityList.value.sort((a, b) => a.activityId - b.activityId));
+    totalActivities.value = res.data.data.total;
+
+    await nextTick();
+  }
+};
+
+const handlePageChange = async (page) => {
+  show.value = false;
+  currentPage.value = page;
+  console.log(page)
+  const res = await activityService.getActivityInfo({
+    pageDTO: {
+      pageNum: currentPage.value,
+      pageSize: pageSize.value
+    },
+    tagId: activeName.value
+  });
+  if (res.data.success) {
+    newActStore.setActivity(res.data.data);
+    activityList.value = res.data.data.list;
+    activityList.value =   (activityList.value.sort((a, b) => a.activityId - b.activityId));
+    totalActivities.value = res.data.data.total;
+
+    await nextTick(
+        show.value = true
+    );
+  }
+
+  // Add logic to fetch or display activities for the current page
+};
+
+import {watch} from "vue";
+import {ElMessage} from "element-plus";
+
+watch(() => activeName.value, async (newVal, oldVal) => {
+  console.log('activeName changed', newVal, oldVal)
+  currentPage.value = 1;
+
+  const res = await activityService.getActivityInfo({
+    pageDTO: {
+      pageNum: currentPage.value,
+      pageSize: pageSize.value
+    },
+    tagId: activeName.value
+  });
+  if (res.data.success) {
+    newActStore.setActivity(res.data.data);
+    activityList.value = res.data.data.list;
+    activityList.value =   (activityList.value.sort((a, b) => a.activityId - b.activityId));
+    totalActivities.value = res.data.data.total;
+
+    await nextTick();
+  }
+})
+
+const toggleReserve = async (activityId, item) => {
+  // Add logic to toggle the reservation status of the activity
+  show.value = false;
+  console.log(activityId);
+  item.isEnroll = !item.isEnroll;
+
+  const res = await activityService.joinActivity(activityId);
+  if (res.data.success) {
+    ElMessage.success('操作成功');
+  }
+  else {
+    ElMessage.error('操作失败');
+  }
+  await nextTick(
+      show.value = true
+  );
+};
+
+const router = useRouter();
+const enter = (item) => {
+  console.log(item)
+  router.push({path: '/activityDetail', query: {activityId: item.activityId}});
+};
+
 </script>
-
-
-<style scoped>
-/* 卡片布局 */
-.box-card {
-  margin: 20px;
-  padding: 10px;
-  border: 1px solid #ebeef5;
-  border-radius: 8px;
-  background-color: #ffffff;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+<style scoped lang='less'>
+/* 整体背景设置 */
+.box {
+  background-repeat: no-repeat;
+  background-size: 100% auto;
+  background-position-y: bottom;
 }
 
-/* 工具栏样式 */
-.toolbar {
-  margin-bottom: 20px;
+/* 标题样式 */
+.header {
+  h1 {
+    position: absolute;
+    left: 20%;
+    top: 25%;
+    font-size: 0.7rem;
+    color: #fff;
+  }
+}
+
+/* Banner 图片 */
+.banner-img {
+  width: 100%;
+  height: 4rem;
+}
+
+/* 页脚 */
+.foot {
+  position: relative;
+  bottom: 0;
+}
+
+/* 内容区域 */
+.center {
+  padding: 1rem 2rem;
+}
+
+.container-box {}
+
+/* 通用容器样式 */
+.common-container {
   display: flex;
-  justify-content: flex-end;
+  flex-direction: column;
+  align-items: center;
+  background: #2d3c7033;
+  border-radius: 30px;
+  padding: 1rem;
 }
 
-/* 表单样式 */
-.el-form-item {
-  margin-bottom: 15px;
+/* 主要内容区 */
+.center-container {
+  height: 100%;
+  width: 100%;
+  padding-bottom: 20px;
+  background-repeat: no-repeat;
+  background-size: 100% auto;
+  background-position-y: bottom;
 }
 
-/* 对话框样式 */
-.dialog-footer {
-  text-align: right;
-  padding: 10px 0;
+/* 标题 */
+.title {
+  height: 1rem;
+  position: relative;
+  line-height: 1rem;
+  padding-left: 0.5rem;
+  font-weight: 700;
+  font-size: 2rem; /* 增大标题字体 */
+  display: flex;
+  margin-bottom: 1rem; /* 增大标题下方的间距 */
+  color: #222;
+  background: linear-gradient(to right, #e4e8fc, transparent);
 }
 
-/* 表格样式 */
-.el-table {
-  border: 1px solid #ebeef5;
-  border-radius: 8px;
+/* 卡片容器 */
+.card-container {
+  display: flex;
+  flex-wrap: wrap;  /* 允许卡片换行 */
+  gap: 1rem;  /* 卡片之间增加间距 */
+  justify-content: center;  /* 居中对齐卡片 */
 }
 
-/* 操作按钮 */
-.el-button {
-  margin-right: 10px;
+/* 卡片样式 */
+.card {
+  width: 12rem;
+  margin-bottom: 1rem;  /* 增大卡片之间的垂直间距 */
+  border-radius: 10px;  /* 圆角 */
+  box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1); /* 轻微阴影 */
+  background: #fff;
+  overflow: hidden;  /* 防止溢出 */
 }
 
-.el-button:last-child {
-  margin-right: 0;
+/* 卡片内部的左侧内容 */
+.card-left {
+  position: relative;
+  width: 100%;
 }
 
-.el-button:hover {
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+/* 卡片内部右侧内容 */
+.card-right {
+  position: relative;
+  padding-left: 1rem;  /* 右侧内容的左边距 */
+}
+
+.card-title {
+  font-size: 0.5rem;  /* 调整标题字体大小 */
+  font-weight: 700;
+}
+
+.card-tag {
+  font-size: 0.8rem;
+  color: #999;
+}
+
+.card-describe {
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.card-position {
+  font-size: 0.8rem;
+  color: #333;
+}
+
+.card-but {
+  position: absolute;
+  right: 1rem;
+  bottom: 0.5rem;
+  width: 3rem;
+  background: #4CAF50;
+  color: #fff;
+  border-radius: 5px;
+  padding: 0.5rem;
+  text-align: center;
+  cursor: pointer;
+}
+
+.card-but2 {
+  position: absolute;
+  right: 5rem;
+  bottom: 0.5rem;
+  width: 3rem;
+  background: #f44336;
+  color: #fff;
+  border-radius: 5px;
+  padding: 0.5rem;
+  text-align: center;
+  cursor: pointer;
+}
+
+/* 图片封面 */
+.cover {
+  height: 5rem;
+  width: 100%;
+  border-radius: 10px;
+  display: block;
+}
+
+/* 蒙版覆盖层 */
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 40%;  /* 增加蒙版的高度 */
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  display: flex;
+  justify-content: center;  /* 内容居中 */
+  align-items: center; /* 内容垂直居中 */
+  z-index: 1;
+  padding: 0.2rem;
+
+  h2 {
+    font-size: 0.8rem;
+    margin: 0;
+  }
+
+  p {
+    font-size: 0.6rem;
+    margin: 0;
+  }
+}
+
+/* 底部右侧浮动标签 */
+.overlay1 {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  z-index: 1;
+}
+
+.bottom-right {
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  padding: 10px;
+  border-radius: 5px;
+  position: relative;
+  box-shadow: 0px 3px 68px rgba(0, 0, 0, 0.5);
+
+  p {
+    font-size: 0.8rem;
+  }
+}
+
+/* 鼠标悬停样式 */
+.mouse {
+  cursor: pointer;
 }
 </style>
-

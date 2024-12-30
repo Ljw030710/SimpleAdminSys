@@ -69,6 +69,8 @@ export default {
 
         if (response.data.success == true) {
           // 登录成功，跳转到首页
+          console.log(response)
+          localStorage.setItem("accessToken", response.data.data.accessToken);
           router.push({ path: '/indexPage' });
         } else {
           errorMessage.value = response.message || '登录失败，请重试';

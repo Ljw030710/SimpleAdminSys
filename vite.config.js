@@ -14,9 +14,9 @@ export default defineConfig({
   server: {
     proxy: {
       '/a': {
-        target: 'http://10.144.22.70:8000', // 后端接口地址
+        target: 'http://192.168.123.49:8000',  // 后端接口地址
         changeOrigin: true,  // 是否更改请求头中的 Host 字段
-      }
-    }
-  }
+      },
+    },
+  },
 });

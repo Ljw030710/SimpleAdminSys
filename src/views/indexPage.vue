@@ -24,6 +24,14 @@
             <i class="el-icon-user"></i>
             <span>活动管理</span>
           </el-menu-item>
+          <el-menu-item index="/activityAdd">
+            <i class="el-icon-edit"></i>
+            <span>添加活动</span>
+          </el-menu-item>
+          <el-menu-item index="/activityUpdate">
+            <i class="el-icon-edit"></i>
+            <span>修改活动</span>
+          </el-menu-item>
         </el-submenu>
       </el-menu>
     </el-aside>

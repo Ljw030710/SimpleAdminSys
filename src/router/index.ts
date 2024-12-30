@@ -2,7 +2,9 @@ import { createRouter, createWebHistory } from 'vue-router';
 import HelloWorld from '@/components/HelloWorld.vue'; // 确保路径正确
 import loginPage from '@/views/loginPage.vue'; // 确保路径和文件名正确
 import indexPage from "@/views/indexPage.vue";
-import activityPage from "@/views/activityPage.vue";
+import activityPage from "../views/activityPage.vue";
+import activityAdd from "../views/activityAdd.vue";
+import activityUpdate from "../views/activityUpdate.vue";
 const routes = [
     {
         path: '/',
@@ -17,13 +19,26 @@ const routes = [
         path: '/indexPage',
         name: 'indexPage',
         component: indexPage,
-        children: [
-            {
-                path: '/activityPage',
-                name: '/activityPage',
-                component: activityPage
-            }
-        ]
+    },
+    {
+        path: '/activityPage',
+        name: 'activityPage',
+        component: activityPage,
+    },
+    {
+        path:'/activityDetail',
+        name: 'activityDetail',
+        component: () => import('@/components/More.vue')
+    },
+    {
+        path: '/activityAdd',
+        name: 'activityAdd',
+        component: activityAdd,
+    },
+    {
+        path: '/activityUpdate',
+        name: 'activityUpdate',
+        component: activityUpdate,
     }
 ];
 
