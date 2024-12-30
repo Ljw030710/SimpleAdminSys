@@ -49,7 +49,8 @@
                       <el-button class="card-but2" round @click="enter(item)">查看活动</el-button>
                       <!--            <el-button class="card-but" round><el-icon :size="7.5"><Plus /></el-icon>{{ "\xa0" }}立即预约</el-button>-->
                     </div>
-                    <el-button @click="submitUpDate" >修改</el-button>
+                    <el-button @click="() => submitUpDate(item)" >修改</el-button>
+                    <el-button @click="() => submitDelete(item)" >删除</el-button>
                   </el-col>
                 </el-row>
               </el-card>
@@ -79,7 +80,7 @@ import { useRoute, useRouter } from 'vue-router';
 import ActivityCard from '@/components/ActivityCard.vue';
 import actStore from "@/store/actStore";
 import activityService from "@/requests/activityService";
-
+import adminService from "@/requests/adminService";
 const newActStore = actStore();
 
 const activeName = ref(1)
@@ -91,10 +92,8 @@ const show = ref(true);
 const currentPage = ref(1);
 const pageSize = ref(4);
 const totalActivities = ref(0);
-const submitUpDate = (item) => {
-  router.push({path: '/activityUpdate', params: {activityId: item.activityId}});
 
-};
+const { setActivity } = actStore();
 
 const activityList = toRefs(newActStore.getActivity());
 // activityList computer 按照activityId排序
@@ -229,6 +228,35 @@ const enter = (item) => {
   console.log(item)
   router.push({path: '/activityDetail', query: {activityId: item.activityId}});
 };
+const submitUpDate = (item) => {
+  router.push({path: '/activityUpdate'});
+  console.log(item,'item')
+  setActivity({
+    activityId: item.activityId,
+    name: item.name,
+    address: item.address,
+    tagName: item.tagName,
+    time: item.time,
+    pic: item.pic,
+    content: item.content,
+    subscriberCount: item.subscriberCount,
+    isEnroll: item.isEnroll
+  })
+}
+const submitDelete = async (item) => {
+  show.value = false;
+  console.log(item)
+  const res = await adminService.deleteActivity({ activityId:  item.activityId});
+  if (res.data.success) {
+    ElMessage.success('删除成功');
+  }
+  else {
+    ElMessage.error('删除失败');
+  }
+  await nextTick(
+      show.value = true
+  );
+}
 
 </script>
 <style scoped lang='less'>

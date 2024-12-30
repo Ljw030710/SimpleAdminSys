@@ -36,6 +36,9 @@
         </el-dialog>
 
       </el-form-item>
+      <el-form-item label="活动内容" prop="content">
+        <el-input v-model="activityAddItem.content"></el-input>
+      </el-form-item>
       <el-form-item label="活动地址" prop="address">
         <el-input v-model="activityAddItem.address"></el-input>
       </el-form-item>
@@ -85,6 +88,7 @@ const activityAddItem = reactive({
   name: "",
   pic: "",
   address: "",
+  content: "",
   tagId: "",
   time: "",
 })
@@ -94,6 +98,9 @@ const rules = ref<FormRules>({
   ],
   pic: [
     { required: true, message: "请上传活动图片", trigger: "blur" },
+  ],
+  content: [
+    { required: true, message: "请输入活动内容", trigger: "blur" },
   ],
   address: [
     { required: true, message: "请输入活动地址", trigger: "blur" },
@@ -172,6 +179,7 @@ const submitForm  = async (uploadData) => {
     const res = await adminService.addActivity({
       name: activityAddItem.name,
       pic: url,
+      content: activityAddItem.content,
       address: activityAddItem.address,
       tagId: activityAddItem.tagId,
       time: activityAddItem.time

@@ -32,11 +32,12 @@
             </div>
           </template>
         </el-upload>
-
-
         <el-dialog v-model="dialogVisible">
           < img w-full :src="dialogImageUrl" alt="Preview Image" />
         </el-dialog>
+      </el-form-item>
+      <el-form-item label="活动内容" prop="content">
+        <el-input v-model="activityAddItem.content"></el-input>
       </el-form-item>
       <el-form-item label="活动地址" prop="address">
         <el-input v-model="activityAddItem.address"></el-input>
@@ -72,6 +73,7 @@ import {FormInstance,FormRules} from "element-plus"
 import userStore from "@/store/userStore";
 const showForum = ref(true);
 import activityService from "@/requests/activityService";
+import actStore from "@/store/actStore";
 const dialogImageUrl = ref('');
 const dialogVisible = ref(false);
 const fileList = ref([]);
@@ -79,17 +81,17 @@ const fileList = ref([]);
 const discussList = ref([]);
 
 const commentsVisible = ref(false);
-
+const {getTag,getActivity} = actStore();
+console.log(getActivity())
 // 上传文件
 const newTokenStore = userStore();
 const activityAddFormRef = ref<FormInstance>();
 const activityAddItem = reactive({
-  activityId: "",
-  name: "",
-  pic: "",
-  address: "",
-  tagId: "",
-  time: "",
+  activityId: getActivity().activityId,
+  name: getActivity().name,
+  address: getActivity().address,
+  tagId: getActivity().tagName,
+  time: getActivity().time,
 })
 const rules = ref<FormRules>({
   activityId: [
@@ -100,6 +102,9 @@ const rules = ref<FormRules>({
   ],
   pic: [
     { required: true, message: "请上传活动图片", trigger: "blur" },
+  ],
+  content: [
+    { required: true, message: "请输入活动内容", trigger: "blur" },
   ],
   address: [
     { required: true, message: "请输入活动地址", trigger: "blur" },
@@ -170,6 +175,7 @@ const submitForm  = async (uploadData) => {
     const res = await adminService.updateActivity({
       activityId: activityAddItem.activityId,
       name: activityAddItem.name,
+      content: activityAddItem.content,
       pic: url,
       address: activityAddItem.address,
       tagId: activityAddItem.tagId,

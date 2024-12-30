@@ -37,15 +37,18 @@ export default class adminService {
     }
     // 删除活动
     static async deleteActivity(data:{
-
+        activityId: number,
     }){
+        console.log(data,'data')
         return request({
             headers: {
                 "Content-Type": "application/json",
             },
-            method: "post",
+            method: "delete",
             url: apis.admin.deleteActivity,
-            data: data
+            params: {
+                activityId: data.activityId
+            }
         });
     }
     //修改活动

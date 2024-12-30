@@ -16,16 +16,7 @@ const actStore = defineStore(
                 tagId: 3,
                 tagName: "奋进三十年",
             }]);
-        const activity = ref([
-            {
-                activityId: 1,
-                name: "AI·引领 智·启新程",
-                content: "行业内首次大规模的AI新品全景展示，将全面展示安恒信息在人工智能领域的最新研发成果，更将AI技术与实际应用场景紧密结合，呈现安恒信息在技术创新和产品研发方面的实力。",
-                tagName: "新品发布",
-                time: "2024-09-01 09:00:00",
-                address: "北京市朝阳区朝阳路",
-                isEnroll: true,
-            },
+        const activity = ref(
             {
                 activityId: 2,
                 name: "2024西湖论剑丨数据安全创新实践案例",
@@ -35,7 +26,7 @@ const actStore = defineStore(
                 address: "杭州市西湖区西湖路",
                 isEnroll: true,
             }
-        ]);
+        );
 
         const act = ref([
   {
